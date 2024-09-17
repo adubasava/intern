@@ -21,7 +21,7 @@ class DatabaseManager:
 
 class DatabaseInitializer(DatabaseManager):
     def __init__(self, config_init):
-        super().__init__(config_init)
+        super().__init__(config)
         self.config = config_init
 
     def create_db(self):
@@ -144,19 +144,19 @@ class DataQueries(DatabaseManager):
 
     def get_rooms_with_students_number(self):
         query = """
-            SELECT room.id, room.name, COUNT(students.id) AS student_count
+            SELECT rooms.id, rooms.name, COUNT(students.id) AS student_count
             FROM rooms
-            LEFT JOIN students ON room.id = students.room
-            GROUP BY room.id, room.name;
+            LEFT JOIN students ON rooms.id = students.room
+            GROUP BY rooms.id, rooms.name;
         """
         return self.execute_query(query, fetch=True, dictionary=True)
 
     def get_five_rooms_with_youngest_students(self):
         query = """
-            SELECT room.name AS room_name, AVG(TIMESTAMPDIFF(YEAR, students.birthdate, CURDATE())) AS avg_age 
+            SELECT rooms.name AS room_name, AVG(TIMESTAMPDIFF(YEAR, students.birthdate, CURDATE())) AS avg_age 
             FROM students
-            JOIN rooms ON students.room = room.id 
-            GROUP BY room.name 
+            JOIN rooms ON students.room = rooms.id 
+            GROUP BY rooms.name 
             ORDER BY avg_age ASC            
             LIMIT 5;
         """
@@ -164,11 +164,11 @@ class DataQueries(DatabaseManager):
 
     def get_five_rooms_with_biggest_age_difference(self):
         query = """
-            SELECT room.name AS room_name, 
+            SELECT rooms.name AS room_name, 
             MAX(TIMESTAMPDIFF(YEAR, students.birthdate, CURDATE())) - MIN(TIMESTAMPDIFF(YEAR, students.birthdate, CURDATE())) AS age_difference
             FROM students
-            JOIN rooms ON students.room = room.id
-            GROUP BY room.name
+            JOIN rooms ON students.room = rooms.id
+            GROUP BY rooms.name
             ORDER BY age_difference DESC            
             LIMIT 5;
         """
@@ -176,10 +176,10 @@ class DataQueries(DatabaseManager):
 
     def get_rooms_with_different_student_sexes(self):
         query = """
-            SELECT room.name AS room_name
+            SELECT rooms.name AS room_name
             FROM students
-            JOIN rooms ON students.room = room.id
-            GROUP BY room.name
+            JOIN rooms ON students.room = rooms.id
+            GROUP BY rooms.name
             HAVING COUNT(DISTINCT students.sex) = 2;
         """
         return self.execute_query(query, fetch=True, dictionary=True)
